@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robo-Dog</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{--sky:#a9d8f7;--cream:#fbf3df;--yellow:#f6bd47;--green:#8fc65f;--purple:#9b86dc;--ink:#2b2433}
+*{box-sizing:border-box}
+body{margin:0;background:#d9d3e6;font-family:Fredoka,"Comic Sans MS",system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;min-height:100vh}
+#app{width:100%;max-width:400px;height:100vh;max-height:840px;position:relative;overflow:hidden;background:var(--sky);border:4px solid var(--ink);border-radius:30px;margin:auto}
+.screen{display:none;position:absolute;inset:0 0 68px 0;padding:62px 14px 14px;overflow-y:auto;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.screen.on{display:flex}
+#s-home,#s-wardrobe{background:radial-gradient(circle at 12% 8%,#fff 0 30px,transparent 31px),radial-gradient(circle at 88% 20%,#fff 0 24px,transparent 25px),linear-gradient(#8ccdf5 0,#cfeaff 55%,var(--green) 55%)}
+#s-quest,#s-shop,#s-profile,#s-drive{background:linear-gradient(#8ccdf5 0,#cfeaff 150px,var(--cream) 150px)}
+#s-result{inset:0;background:repeating-conic-gradient(from 0deg at 50% 38%,#ab97e6 0 10deg,#9480d6 10deg 20deg)}
+.banner{position:absolute;top:14px;left:50%;transform:translateX(-50%) rotate(-2deg);background:#fbe3a6;border:3px solid var(--ink);border-radius:12px 12px 22px 22px;padding:6px 24px;font-size:22px;font-weight:700;white-space:nowrap;box-shadow:0 4px 0 var(--ink);z-index:3}
+.logo{font-family:"Permanent Marker",cursive;font-size:44px;margin:6px 0 0;transform:rotate(-3deg);text-shadow:3px 3px 0 #fff}
+.card{background:var(--cream);border:3px solid var(--ink);border-radius:20px;padding:10px 14px;width:100%;box-shadow:0 4px 0 rgba(43,36,51,.25)}
+.btn{background:var(--yellow);border:3px solid var(--ink);border-radius:32px;padding:10px 32px;font:inherit;font-size:21px;font-weight:700;cursor:pointer;box-shadow:0 5px 0 var(--ink);color:var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.55}
+.round{width:44px;height:44px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);font-size:20px;font-weight:900;cursor:pointer;position:absolute;top:10px;left:12px;z-index:4;color:var(--ink)}
+.pts{position:absolute;top:12px;right:12px;background:var(--cream);border:3px solid var(--ink);border-radius:22px;padding:3px 14px 3px 8px;font-weight:700;font-size:18px;z-index:6}
+.bubble{background:#fff;border:3px solid var(--ink);border-radius:26px;padding:10px 18px;font-weight:700;font-size:18px;position:relative;margin-bottom:6px}
+.bubble:after{content:"";position:absolute;bottom:-14px;left:40px;width:20px;height:20px;background:#fff;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(45deg)}
+.bar{width:100%;height:22px;background:#c9c5d0;border:3px solid var(--ink);border-radius:14px;overflow:hidden}
+.bar>div{height:100%;background:var(--green);width:0;transition:width .6s;border-right:3px solid var(--ink)}
+nav{position:absolute;bottom:0;left:0;right:0;height:68px;background:var(--cream);border-top:4px solid var(--ink);border-radius:22px 22px 0 0;display:flex;z-index:9}
+nav button{flex:1;border:0;background:none;font:inherit;font-weight:700;font-size:12px;cursor:pointer;color:var(--ink)}
+nav button span{display:block;font-size:24px}
+nav button.on{border-bottom:5px solid var(--yellow)}
+.dog svg{width:100%;height:auto;overflow:visible}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.item{background:var(--cream);border:3px solid var(--ink);border-radius:16px;padding:8px 2px;font-weight:700;cursor:pointer;box-shadow:0 3px 0 rgba(43,36,51,.3)}
+.item svg{width:62px;height:50px}
+.item.sel{outline:4px solid var(--yellow);background:#fff4cc}
+.item.owned{background:#dff0c8}.item.lock{opacity:.5}
+.red{color:#e0301e}
+.status{font-size:14px;font-weight:600;min-height:18px}
+.badge{width:62px;height:62px;border:3px solid var(--ink);border-radius:50%;background:#fff;font-size:30px;line-height:56px}
+.badge.lock{border-style:dashed;opacity:.4;background:none}
+.scene{width:100%;background:linear-gradient(#cfeaff,#cfeaff 62%,var(--green) 62%);border:3px solid var(--ink);border-radius:18px;display:flex;justify-content:center;align-items:flex-end;gap:10px;padding:6px 8px 0;overflow:hidden}
+.set{font-size:13px;text-align:left}.set input[type=text]{width:100%}
+@keyframes hop{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-18px) rotate(-3deg)}60%{transform:translateY(0) rotate(3deg)}}
+.hop{animation:hop .9s ease-in-out 3}
+.pad{display:grid;grid-template-columns:repeat(3,84px);grid-template-rows:repeat(3,84px);gap:10px;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none}
+.pad .btn{width:84px;height:84px;padding:0;font-size:34px;border-radius:24px;touch-action:none;-webkit-touch-callout:none}
+.pad .btn.stop{background:#f0614f;font-size:18px}
+.pad .btn:active,.pad .btn.held{transform:translateY(4px);box-shadow:0 1px 0 var(--ink);background:#ffd36e}
+.deco{position:absolute;color:#fff;font-size:22px;text-shadow:0 0 2px var(--ink)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="pts" id="pts">🐾 0</div>
+
+  <section class="screen on" id="s-home">
+    <div class="logo">Robo-Dog 🐾</div>
+    <div class="bubble">Hey Explorer!<br><span style="font-size:15px">Ready for today's adventure?</span></div>
+    <div class="dog" data-dog="happy" style="width:230px"></div>
+    <button class="btn" onclick="go('quest')">START MISSION ›</button>
+  </section>
+
+  <section class="screen" id="s-quest">
+    <button class="round" onclick="go('home')">←</button>
+    <div class="banner">TODAY'S QUEST</div>
+    <div style="font-size:30px;font-weight:700;margin-top:6px">Find 3 <span class="red">RED</span> things!</div>
+    <div style="font-size:15px">Explore your surroundings and help Robo-Dog discover something new!</div>
+    <div class="scene"><div class="dog" data-dog="happy" style="width:150px"></div><div style="font-size:60px;margin-bottom:6px">🍎</div></div>
+    <div class="bar"><div id="qbar"></div></div>
+    <b id="qcount">0 / 3 discovered</b>
+    <b>Reward: 50 Paw Points 🐾</b>
+    <button class="btn" id="scanBtn" onclick="scan()">SCAN WITH ROBO-DOG</button>
+    <div class="status" id="status"></div>
+  </section>
+
+  <section class="screen" id="s-result">
+    <div class="banner" id="rtitle" style="top:30px;font-size:28px">RED FOUND!</div>
+    <span class="deco" style="top:110px;left:30px">★</span><span class="deco" style="top:150px;right:30px">★</span><span class="deco" style="bottom:170px;left:24px">✦</span>
+    <div class="dog hop" data-dog="cheer" style="width:290px;margin-top:40px"></div>
+    <div class="bubble" id="rmsg" style="background:#fbd9e8">+10 Paw Points! 🐾</div>
+    <button class="btn" onclick="go('quest')">Nice job! 🐾</button>
+  </section>
+
+  <section class="screen" id="s-shop">
+    <button class="round" onclick="go('wardrobe')">←</button>
+    <div class="banner">🐾 PAW SHOP</div>
+    <div style="margin-top:8px">Spend your Paw Points on cool items!</div>
+    <div class="grid" id="shopGrid"></div>
+    <button class="btn" onclick="buy()">BUY</button>
+    <div class="status" id="shopMsg">Tap an item to select it.</div>
+  </section>
+
+  <section class="screen" id="s-wardrobe">
+    <div class="banner">MY ROBO-DOG</div>
+    <div class="dog" data-dog="happy" style="width:230px"></div>
+    <div class="card" style="padding:8px"><div class="grid" id="wardGrid"></div></div>
+    <button class="btn" onclick="go('shop')" style="font-size:16px;padding:6px 20px">🛒 Paw Shop</button>
+  </section>
+
+  <section class="screen" id="s-profile">
+    <div class="banner">PROFILE</div>
+    <button class="round" style="left:auto;right:12px;top:60px;width:36px;height:36px;font-size:16px" onclick="toggleSet()">⚙</button>
+    <div style="display:flex;gap:14px;align-items:center;width:100%;margin-top:6px">
+      <div class="dog" data-dog="cheer" data-vb="90 40 820 820" style="width:110px;height:110px;border-radius:50%;border:3px solid var(--ink);background:#bfe3fb;overflow:hidden;flex:none;"></div>
+      <div style="flex:1;text-align:left"><b style="font-size:22px">Explorer ✎</b><br>Level <span id="lvl">1</span>
+        <div class="bar" style="height:16px"><div id="xpbar"></div></div><span id="xptxt" style="font-size:13px"></span></div>
+    </div>
+    <div class="card" id="setBox" style="display:none">
+      <div class="set"><b>⚙ Settings</b><br>
+      <label><input type="checkbox" id="demo" onchange="saveSettings()"> Demo Mode (simulated scan, no ESP32)</label><br>
+      ESP32 address:<input type="text" id="esp" onchange="saveSettings()"><br>
+      <button onclick="resetQuest()">Restart quest (keep points &amp; items)</button><br><button onclick="resetAll()">Reset EVERYTHING</button></div></div>
+    <div style="display:flex;gap:10px;width:100%">
+      <div class="card"><b>🐾 Paw Points</b><br><span id="pp" style="font-size:24px"></span></div>
+      <div class="card"><b>🏆 Missions Completed</b><br><span id="mc" style="font-size:24px"></span></div>
+    </div>
+    <b style="align-self:flex-start">Achievements</b>
+    <div style="display:flex;gap:10px" id="badges"></div>
+  </section>
+
+  <section class="screen" id="s-drive">
+    <div class="banner">DRIVE ROBO-DOG</div>
+    <div class="dog" data-dog="happy" style="width:120px"></div>
+    <div class="card" style="font-size:13px">Hold a button to move. Let go and Robo-Dog stops.</div>
+    <div class="pad">
+      <span></span><button class="btn" data-move="forward">▲</button><span></span>
+      <button class="btn" data-move="left">◀</button><button class="btn stop" onclick="sendMove('stop')">STOP</button><button class="btn" data-move="right">▶</button>
+      <span></span><button class="btn" data-move="back">▼</button><span></span>
+    </div>
+    <div class="status" id="driveStatus">Ready.</div>
+    <div class="card" style="font-size:12px;text-align:left"><b>Heads up:</b> these buttons send move commands to the ESP32. The robot only physically moves once motors and a motor driver are wired up and the ESP32 code handles <code>/move</code>.</div>
+  </section>
+
+  <nav>
+    <button data-go="home"><span>🏠</span>Home</button>
+    <button data-go="quest"><span>📍</span>Quests</button>
+    <button data-go="drive"><span>🎮</span>Drive</button>
+    <button data-go="wardrobe"><span>👕</span>Wardrobe</button>
+    <button data-go="profile"><span>👤</span>Profile</button>
+  </nav>
+</div>
+
+<script>
+// The dog is the drawing in images/dog.png (1000x1000, transparent). Accessories are drawn on the same 1000x1000 canvas.
+const K='#2b2433', st=`stroke="${K}" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"`;
+// back:true = drawn BEHIND the dog. vb = the crop used for the small shop/wardrobe icon.
+const ITEMS=[
+ {id:'bandana',n:'Bandana',p:50,vb:'410 560 210 240',g:`<path d="M426 596Q510 628 598 618L508 772Z" fill="#e8402f" ${st}/><circle cx="508" cy="652" r="11" fill="#fff"/>`},
+ {id:'crown',n:'Crown',p:100,vb:'400 10 270 180',g:`<g transform="translate(530 168) rotate(-8)"><path d="M-100 0L-108-92-52-48 0-112 52-48 108-92 100 0Z" fill="#f6bd47" ${st}/><circle cx="0" cy="-112" r="9" fill="#e8402f" ${st}/></g>`},
+ {id:'glasses',n:'Shades',p:100,vb:'430 240 320 150',g:`<g transform="rotate(-13 590 314)"><rect x="448" y="272" width="112" height="84" rx="26" fill="#3a3a52" stroke="#f6bd47" stroke-width="9"/><rect x="620" y="272" width="112" height="84" rx="26" fill="#3a3a52" stroke="#f6bd47" stroke-width="9"/><path d="M560 304h60" stroke="#f6bd47" stroke-width="9"/><path d="M470 292l30-6M642 292l30-6" stroke="#fff" stroke-width="7" stroke-linecap="round"/></g>`},
+ {id:'cap',n:'Blue Cap',p:75,vb:'370 20 330 210',g:`<g transform="translate(540 170) rotate(-8)"><path d="M-150 20Q-135-115 0-118 135-115 150 20Z" fill="#3b6fd8" ${st}/><path d="M60 14h150q-6 30-92 26z" fill="#2f58b0" ${st}/></g>`},
+ {id:'backpack',n:'Backpack',p:150,back:true,vb:'220 500 220 240',g:`<g transform="rotate(35 330 640)"><rect x="268" y="560" width="124" height="170" rx="34" fill="#3b6fd8" ${st}/><rect x="292" y="640" width="76" height="48" rx="14" fill="#2f58b0" ${st}/></g>`},
+ {id:'bow',n:'Bow',p:75,vb:'520 80 170 130',g:`<g transform="translate(610 150) rotate(-8)"><path d="M0 0L-62-42V42ZM0 0L62-42V42Z" fill="#f48fb9" ${st}/><circle r="14" fill="#f06aa0" ${st}/></g>`}];
+
+function dog(expr,worn,vb){
+  const on=ITEMS.filter(i=>worn.includes(i.id));
+  const back=on.filter(i=>i.back).map(i=>i.g).join('');
+  const front=on.filter(i=>!i.back).map(i=>i.g).join('');
+  return `<svg viewBox="${vb||'0 0 1000 1000'}">${back}<image href="images/dog.png" x="0" y="0" width="1000" height="1000"/>${front}</svg>`;
+}
+function icon(i){return `<svg viewBox="${i.vb}">${i.g}</svg>`}
+
+let S=JSON.parse(localStorage.getItem('robodog')||'null')||{pts:120,xp:0,found:0,missions:0,owned:[],worn:[],demo:true,esp:'http://192.168.4.1'};
+const TARGET=3,FIND_PTS=10,QUEST_PTS=50,XP_FIND=10,XP_QUEST=40;
+let selected=null,busy=false;
+const $=id=>document.getElementById(id);
+const save=()=>localStorage.setItem('robodog',JSON.stringify(S));
+function saveSettings(){S.demo=$('demo').checked;S.esp=$('esp').value.trim().replace(/\/$/,'');save()}
+function toggleSet(){const b=$('setBox');b.style.display=b.style.display==='none'?'block':'none'}
+function resetQuest(){S.found=0;save();$('status').textContent='';render()}
+function resetAll(){if(confirm('Reset everything?')){localStorage.removeItem('robodog');location.reload()}}
+
+function go(name){
+  endMove();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+name));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===name));
+  document.querySelector('nav').style.display=name==='result'?'none':'flex';
+  render();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.go));
+
+function render(){
+  $('pts').textContent='🐾 '+S.pts;
+  document.querySelectorAll('[data-dog]').forEach(d=>d.innerHTML=dog(d.dataset.dog,S.worn,d.dataset.vb));
+  $('qbar').style.width=(S.found/TARGET*100)+'%';
+  $('qcount').textContent=S.found+' / '+TARGET+' discovered';
+  $('scanBtn').disabled=busy;
+  $('scanBtn').textContent=S.found>=TARGET?'PLAY AGAIN 🔄':'SCAN WITH ROBO-DOG';
+  $('demo').checked=S.demo;$('esp').value=S.esp;
+  $('shopGrid').innerHTML=ITEMS.map(i=>`<div class="item ${S.owned.includes(i.id)?'owned':''} ${selected===i.id?'sel':''}" onclick="pick('${i.id}')">${icon(i)}<br>${S.owned.includes(i.id)?'Owned ✓':'🐾 '+i.p}</div>`).join('');
+  $('wardGrid').innerHTML=ITEMS.map(i=>{const o=S.owned.includes(i.id);return `<div class="item ${S.worn.includes(i.id)?'sel':''} ${o?'':'lock'}" onclick="wear('${i.id}')" style="font-size:12px">${icon(i)}<br>${o?i.n:'🔒'}</div>`}).join('');
+  $('lvl').textContent=Math.floor(S.xp/100)+1;
+  $('xpbar').style.width=(S.xp%100)+'%';$('xptxt').textContent=(S.xp%100)+' / 100 XP';
+  $('pp').textContent=S.pts;$('mc').textContent=S.missions;
+  $('badges').innerHTML=[['⭐',S.missions>=1],['🐾',S.owned.length>=1],['🏔️',S.missions>=3],['',false]].map(b=>`<div class="badge ${b[1]?'':'lock'}">${b[1]?b[0]:''}</div>`).join('');
+}
+
+// ---- Scanning: real ESP32, or a clearly labelled simulation ----
+async function getColor(){
+  if(S.demo){
+    await new Promise(r=>setTimeout(r,700));
+    return {color:['RED','RED','GREEN','BLUE','OTHER COLOR'][Math.floor(Math.random()*5)],source:'SIMULATED'};
+  }
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
+  try{const r=await fetch(S.esp+'/scan',{signal:ctl.signal});const j=await r.json();return {color:String(j.color).toUpperCase(),source:'ESP32'}}
+  finally{clearTimeout(t)}
+}
+async function scan(){
+  if(busy)return;
+  if(S.found>=TARGET){resetQuest();return}
+  busy=true;render();$('status').textContent='Robo-Dog is sniffing... 🐽';
+  try{
+    const {color,source}=await getColor();
+    if(color==='RED'){
+      S.found++;S.pts+=FIND_PTS;S.xp+=XP_FIND;
+      let title='RED FOUND!',msg='+'+FIND_PTS+' Paw Points! 🐾';
+      if(S.found>=TARGET){S.pts+=QUEST_PTS;S.xp+=XP_QUEST;S.missions++;title='QUEST COMPLETE!';msg='+'+QUEST_PTS+' bonus Paw Points! 🎉'}
+      save();$('rtitle').textContent=title;$('rmsg').textContent=msg+' ('+source+')';
+      $('status').textContent='';busy=false;go('result');return;
+    }
+    $('status').textContent='Saw '+color+' ('+source+') - not red. Try another object!';
+  }catch(e){$('status').textContent="Can't reach the ESP32 at "+S.esp+". Check Wi-Fi or use Demo Mode (Profile ⚙).";}
+  busy=false;render();
+}
+
+// ---- Shop / wardrobe ----
+function pick(id){selected=id;const i=ITEMS.find(x=>x.id===id);
+  $('shopMsg').textContent=S.owned.includes(id)?i.n+' is already yours!':i.n+' selected - '+i.p+' 🐾';render()}
+function buy(){
+  if(!selected){$('shopMsg').textContent='Pick an item first!';return}
+  const i=ITEMS.find(x=>x.id===selected);
+  if(S.owned.includes(i.id)){$('shopMsg').textContent='You already own it!';return}
+  if(S.pts<i.p){$('shopMsg').textContent='Need '+(i.p-S.pts)+' more Paw Points!';return}
+  S.pts-=i.p;S.owned.push(i.id);S.worn.push(i.id);save();$('shopMsg').textContent='Bought '+i.n+'! See it in My Robo-Dog 🎉';render();
+}
+function wear(id){if(!S.owned.includes(id))return;S.worn=S.worn.includes(id)?S.worn.filter(x=>x!==id):[...S.worn,id];save();render()}
+
+// ---- Drive controller: hold to move, release to stop ----
+let moveTimer=null,heldDir=null;
+async function sendMove(dir){
+  const out=$('driveStatus');
+  if(S.demo){out.textContent='SIMULATED: '+dir.toUpperCase()+' (nothing sent to the robot)';return}
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),1500);
+  try{await fetch(S.esp+'/move?dir='+dir,{signal:ctl.signal});out.textContent='Sent: '+dir.toUpperCase()+' (ESP32)'}
+  catch(e){out.textContent="Can't reach the ESP32 at "+S.esp}
+  finally{clearTimeout(t)}
+}
+function startMove(dir){endMove();heldDir=dir;sendMove(dir);moveTimer=setInterval(()=>sendMove(dir),250)}
+function endMove(){if(!heldDir)return;clearInterval(moveTimer);moveTimer=null;heldDir=null;sendMove('stop')}
+document.querySelectorAll('[data-move]').forEach(b=>{
+  b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('held');startMove(b.dataset.move)});
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>{b.classList.remove('held');endMove()}));
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+});
+
+go('home');
+</script>
+</body>
+</html>
